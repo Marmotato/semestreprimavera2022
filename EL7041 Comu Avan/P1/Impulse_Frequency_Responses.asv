@@ -1,3 +1,4 @@
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Script for plotting the time domain and frequency domain representation
 % of raised cosine filters for various values of alpha
@@ -6,7 +7,7 @@ clear all
 fs =10;
 NFFT=1024;
 FPulse=[-NFFT/2:NFFT/2-1]/NFFT;
-alpha = 0.22;
+alpha = 0.35;
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %defining the RC filter
@@ -46,6 +47,59 @@ Exp2_Total(Exp2DenZero)=0.5;
 Linear_Combination_Pulse_PLP=(Exp1_Total+Exp2_Total);
 Linear_Combination_Pulse_PLP_Spectrum=(abs((fft(Linear_Combination_Pulse_PLP,NFFT))/fs));
 Linear_Combination_Pulse_PLP_Spectrum_dB = 20*log10((fft(Linear_Combination_Pulse_PLP,1024))/fs);
+
+
+
+%EXPONENTIAL LINEAR PULSE
+constante=1; %alpha
+beta = 0.1; %Beta
+
+
+Exp2_2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]); %PLP
+Exp2_2_Den=pi^2*alpha*[-fs:1/fs:fs].^2;
+Exp2_2DenZero=find(abs(Exp2_2_Den) < 10^-10);
+Exp2_2_Total=Exp2_2_Num./Exp2_Den;
+Exp2_Total(Exp2_2DenZero)=1;
+
+Exp3 = exp(-pi*(beta/2)*[-fs:1/fs:fs].^2);
+
+Exp3_Zero=find(abs(Exp3) < 10^-10)
+Exp3()
+
+Exponential_Linear_Pulse=( Exp3.*Exp2_2_Total);
+Exponential_Linear_Pulse_Spectrum=(abs((fft(Linear_Combination_Pulse_PLP,NFFT))/fs));
+Exponential_Linear_Pulse_Spectrum_dB = 20*log10((fft(Linear_Combination_Pulse_PLP,1024))/fs);
+
+
+
+
+%BETTER THAN RAISED COSINE PULSE
+
+beta2 = (pi * alpha) / log(2);
+
+% Calculate the sinc expression
+sinc_BTRC_num = sin([-fs:1/fs:fs]);
+sinc_BTRC_den = [-fs:1/fs:fs];
+sinc_BTRC_tot = sinc_BTRC_num./sinc_BTRC_den;
+sinc_BTRC_tot_zero=find(abs(sinc_BTRC_tot) < 10^-10);
+
+% Calculate the second expression for BTRC
+numerador_second_BTRC = (2 * beta2 * [-fs:1/fs:fs]) .* sin(pi * alpha * [-fs:1/fs:fs]);
+numerador_second_BTRC = numerador_second_BTRC + (2 .* cos(pi * alpha * [-fs:1/fs:fs]) - 1);
+
+% Never 0
+denominador_second_BTRC = (beta2 * [-fs:1/fs:fs]).^2 + 1;
+
+% Get the BTRC Pulse
+BTRC = ((sinc_BTRC_tot .* numerador_second_BTRC) ./ denominador_second_BTRC);
+%BTRC = arrayfun(@(x) BTRC(x,alpha),[-fs:1/fs:fs]);
+BTRC(sinc_BTRC_tot_zero) = (numerador_second_BTRC(sinc_BTRC_tot_zero) / denominador_second_BTRC(sinc_BTRC_tot_zero));
+
+BTRC_Pulse_Spectrum=(abs((fft(BTRC,NFFT))/fs));
+BTRC_Pulse_Spectrum_dB = 20*log10((fft(BTRC,1024))/fs);
+
+
+
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %Respuesta al Impulso
@@ -55,9 +109,13 @@ plot([-fs:1/fs:fs],[RC_Filter],'--kd','LineWidth',1)
 hold on
 plot([-fs:1/fs:fs],[Linear_Combination_Pulse_PLP],'--ko','LineWidth',1)
 hold on
+plot([-fs:1/fs:fs],[BTRC],'--ks','LineWidth',1)
+hold on
+plot([-fs:1/fs:fs],[Exponential_Linear_Pulse],'--kp','LineWidth',1)
+hold on
 
 title('Impulse Response for ISI-Free Pulses with alpha='+string(alpha),'LineWidth',.1);
-legend('RC', 'Linear Combination Pulse');
+legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse');
 axis([0 3 -.2 1.1])
 hold all
 
@@ -72,9 +130,12 @@ plot(FPulse*2*fs, fftshift(RC_Filter_Spectrum),'--kd','LineWidth',1);
 hold on
 plot(FPulse*fs*2, fftshift(Linear_Combination_Pulse_PLP_Spectrum),'--ko','LineWidth',1);
 hold on
-
+plot(FPulse*fs*2, fftshift(BTRC_Pulse_Spectrum),'--ks','LineWidth',1);
+hold on
+plot(FPulse*fs*2, fftshift(Exponential_Linear_Pulse_Spectrum),'--kp','LineWidth',1);
+hold on
 title('Frequency Response for ISI-Free Pulses with alpha='+string(alpha),'LineWidth',.1);
-legend('RC','Linear Combination Pulse');
+legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse');
 axis([-1.6 1.6 0 1])
 
 grid on
@@ -82,19 +143,19 @@ xlabel('f/B')
 ylabel('H(f)/T')
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
-%Spectral Magnitude
-figure(3)
-plot(FPulse*2*fs, fftshift(RC_Filter_Spectrum_dB),'--kd','LineWidth',1);
-hold on
-plot(FPulse*fs*2, fftshift(Linear_Combination_Pulse_PLP_Spectrum_dB),'--ko','LineWidth',1);
-hold on
-
-legend('RC','Linear Combination Pulse');
-
-
-grid on
-xlabel('f/B')
-ylabel('dB')
+% %Spectral Magnitude
+% figure(3)
+% plot(FPulse*2*fs, fftshift(RC_Filter_Spectrum_dB),'--kd','LineWidth',1);
+% hold on
+% plot(FPulse*fs*2, fftshift(Linear_Combination_Pulse_PLP_Spectrum_dB),'--ko','LineWidth',1);
+% hold on
+% 
+% legend('RC','Linear Combination Pulse');
+% 
+% 
+% grid on
+% xlabel('f/B')
+% ylabel('dB')
 %--------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 % Welch spectral estimator.
@@ -118,5 +179,3 @@ ylabel('dB')
 % hold on
 % grid on
 % legend('Linear Combination Pulse');
-
-

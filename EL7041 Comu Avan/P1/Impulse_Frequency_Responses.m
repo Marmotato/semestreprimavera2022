@@ -52,20 +52,22 @@ Linear_Combination_Pulse_PLP_Spectrum_dB = 20*log10((fft(Linear_Combination_Puls
 
 %EXPONENTIAL LINEAR PULSE
 constante=1; %alpha
-beta = 0.1 %Beta
+beta = 0.1; %Beta
 
 
-Exp2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]); %PLP
-Exp2_Den=pi^2*alpha*[-fs:1/fs:fs].^2;
-Exp2DenZero=find(abs(Exp2_Den) < 10^-10);
-Exp2_Total=Exp2_Num./Exp2_Den;
-Exp2_Total(Exp2DenZero)=0.5;
+Exp2_2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]); %PLP
+Exp2_2_Den=pi^2*alpha*[-fs:1/fs:fs].^2;
+Exp2_2DenZero=find(abs(Exp2_2_Den) < 10^-10);
+Exp2_2_Total=Exp2_2_Num./Exp2_Den;
+Exp2_Total(Exp2_2DenZero)=1;
 
-Exp3 = exp(-pi*(beta/2)*[-fs:1/fs:fs])
+Exp3 = exp(-pi*(beta/2)*[-fs:1/fs:fs].^2);
 
+Exp3_Zero=find(abs(Exp3) < 10^-10);
+Exp3(Exp3_Zero) = 1;
 
-
-Exponential_Linear_Pulse=( Exp3.*Exp2_Total);
+Exponential_Linear_Pulse=( Exp3.*Exp2_2_Total);
+Exponential_Linear_Pulse(isnan(Exponential_Linear_Pulse))=1;
 Exponential_Linear_Pulse_Spectrum=(abs((fft(Linear_Combination_Pulse_PLP,NFFT))/fs));
 Exponential_Linear_Pulse_Spectrum_dB = 20*log10((fft(Linear_Combination_Pulse_PLP,1024))/fs);
 
@@ -77,19 +79,24 @@ Exponential_Linear_Pulse_Spectrum_dB = 20*log10((fft(Linear_Combination_Pulse_PL
 beta2 = (pi * alpha) / log(2);
 
 % Calculate the sinc expression
-sinc_BTRC = sin([-fs:1/fs:fs])./[-fs:1/fs:fs];
-sinc_BTRC_zero=find(abs(sinc_BTRC) < 10^-10);
+sinc_BTRC_num = sin([-fs:1/fs:fs]);
+sinc_BTRC_den = [-fs:1/fs:fs];
+sinc_BTRC_tot = sinc_BTRC_num./sinc_BTRC_den;
+sinc_BTRC_tot_zero=find(abs(sinc_BTRC_tot) < 10^-10);
 
 % Calculate the second expression for BTRC
 numerador_second_BTRC = (2 * beta2 * [-fs:1/fs:fs]) .* sin(pi * alpha * [-fs:1/fs:fs]);
-numerador_second_BTRC = numerador_second_BTRC + 2 .* cos(pi * alpha * [-fs:1/fs:fs]) - 1;
+numerador_second_BTRC = numerador_second_BTRC + (2 .* cos(pi * alpha * [-fs:1/fs:fs]) - 1);
 
 % Never 0
 denominador_second_BTRC = (beta2 * [-fs:1/fs:fs]).^2 + 1;
 
 % Get the BTRC Pulse
-BTRC = sinc_BTRC .* numerador_second_BTRC ./ denominador_second_BTRC;
-BTRC(sinc_BTRC_zero) = numerador_second_BTRC / denominador_second_BTRC;
+BTRC = ((sinc_BTRC_tot .* numerador_second_BTRC) ./ denominador_second_BTRC);
+%BTRC = arrayfun(@(x) BTRC(x,alpha),[-fs:1/fs:fs]);
+BTRC(isnan(BTRC))=1;
+BTRC(sinc_BTRC_tot_zero) = (numerador_second_BTRC(sinc_BTRC_tot_zero) / denominador_second_BTRC(sinc_BTRC_tot_zero));
+
 BTRC_Pulse_Spectrum=(abs((fft(BTRC,NFFT))/fs));
 BTRC_Pulse_Spectrum_dB = 20*log10((fft(BTRC,1024))/fs);
 
@@ -110,7 +117,7 @@ plot([-fs:1/fs:fs],[Exponential_Linear_Pulse],'--kp','LineWidth',1)
 hold on
 
 title('Impulse Response for ISI-Free Pulses with alpha='+string(alpha),'LineWidth',.1);
-legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse PLP');
+legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse');
 axis([0 3 -.2 1.1])
 hold all
 
@@ -130,7 +137,7 @@ hold on
 plot(FPulse*fs*2, fftshift(Exponential_Linear_Pulse_Spectrum),'--kp','LineWidth',1);
 hold on
 title('Frequency Response for ISI-Free Pulses with alpha='+string(alpha),'LineWidth',.1);
-legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse PLP');
+legend('RC', 'Linear Combination Pulse', 'BTRC', 'Exponential Linear Pulse');
 axis([-1.6 1.6 0 1])
 
 grid on
@@ -174,13 +181,3 @@ ylabel('H(f)/T')
 % hold on
 % grid on
 % legend('Linear Combination Pulse');
-
-
-function [y]=sinc_m(x)
-    if x==0
-        y=[1]
-    else
-        y = (sin([x])/[x])
-        
-    end
-end

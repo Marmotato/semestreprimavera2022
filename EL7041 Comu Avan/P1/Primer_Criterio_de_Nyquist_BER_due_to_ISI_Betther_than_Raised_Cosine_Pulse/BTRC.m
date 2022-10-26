@@ -6,7 +6,7 @@ T=1;
 beta = (pi * alpha) / log(2);
 
 % Calculate the sinc expression
-sinc_BTRC = sinc(t / T);
+sinc_BTRC = sin(t / T);
 
 % Calculate the second expression for BTRC
 numerador_second_BTRC = (2 * beta * (t / T)) * sin(pi * alpha * (t / T));
