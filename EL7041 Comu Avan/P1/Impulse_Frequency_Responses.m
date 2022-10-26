@@ -7,7 +7,7 @@ clear all
 fs =10;
 NFFT=1024;
 FPulse=[-NFFT/2:NFFT/2-1]/NFFT;
-alpha = 0.5;
+alpha = 0.22;
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %defining the RC filter
@@ -30,19 +30,19 @@ RC_Filter_Spectrum_dB = 20*log10((fft(RC_Filter,1024))/fs);
 %--------------------------------------------------------------------------
 %LINEAR COMBINATION PULSE
 %alpha*PLP(n=1) +(1-alpha)RC
-constante=1; %alpha
+constante=1.7; %alpha
 
 Exp1_Num=((1-constante)*sin(pi*[-fs:1/fs:fs]).*cos(pi*alpha*[-fs:1/fs:fs])); %RC
 Exp1_Den=pi*[-fs:1/fs:fs].*(1-(2*alpha*[-fs:1/fs:fs]).^2);
 Exp1DenZero=find(abs(Exp1_Den) < 10^-10);
 Exp1_Total=Exp1_Num./Exp1_Den;
-Exp1_Total(Exp1DenZero)=0.5;
+Exp1_Total(Exp1DenZero)=0;
 
 Exp2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]); %PLP
 Exp2_Den=pi^2*alpha*[-fs:1/fs:fs].^2;
 Exp2DenZero=find(abs(Exp2_Den) < 10^-10);
 Exp2_Total=Exp2_Num./Exp2_Den;
-Exp2_Total(Exp2DenZero)=0.5;
+Exp2_Total(Exp2DenZero)=1;
 
 Linear_Combination_Pulse_PLP=(Exp1_Total+Exp2_Total);
 Linear_Combination_Pulse_PLP_Spectrum=(abs((fft(Linear_Combination_Pulse_PLP,NFFT))/fs));

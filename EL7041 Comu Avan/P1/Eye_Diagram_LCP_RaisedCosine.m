@@ -7,7 +7,7 @@ clc
 N  = 10^5; % number of symbols, solo se tomaran las primeras 1000000 muestras
 am = 2*(rand(1,N)>0.5)-1 + (1i)*(2*(rand(1,N)>0.5)-1); %random binary sequence BPSK
 fs = 10; % sampling frequency in Hz
-alpha = 0.5; %roll-off factor
+alpha = 0.22; %roll-off factor
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %RAISED COSINE FILTER
@@ -34,17 +34,17 @@ gt_alpha35 = sincOp.*cosOp; %RC impulse responde
 % constante*PLP(n=1) +(1-constante)RC
 constante=1.7;  %valor de la constante Beta --> referencia 
 
-Exp1_Num=((1-constante)*sin(pi*[-fs:1/fs:fs]).*cos(pi*alpha*[-fs:1/fs:fs]));
+Exp1_Num=((1-constante)*sin(pi*[-fs:1/fs:fs]).*cos(pi*alpha*[-fs:1/fs:fs])); %RC
 Exp1_Den=pi*[-fs:1/fs:fs].*(1-(2*alpha*[-fs:1/fs:fs]).^2);
 Exp1DenZero=find(abs(Exp1_Den) < 10^-10);
 Exp1_Total=Exp1_Num./Exp1_Den;
 Exp1_Total(Exp1DenZero)=0;
 
-Exp2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]);
+Exp2_Num=constante*sin(pi*[-fs:1/fs:fs]).*sin(pi*alpha*[-fs:1/fs:fs]); %PLP
 Exp2_Den=pi^2*alpha*[-fs:1/fs:fs].^2;
 Exp2DenZero=find(abs(Exp2_Den) < 10^-10);
 Exp2_Total=Exp2_Num./Exp2_Den;
-Exp2_Total(Exp2DenZero)=0;
+Exp2_Total(Exp2DenZero)=1;
 
 Linear_Combination_Pulse_PLP=(Exp1_Total+Exp2_Total);
 
