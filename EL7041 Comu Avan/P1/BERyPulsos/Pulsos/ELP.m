@@ -8,17 +8,14 @@ T=1;
 constante=1; %alpha
 beta = 0.1; %Beta
 
+Exp2_2_Num=constante*sin(pi*(t / T)).*sin(pi*alpha*(t / T)); %PLP
+Exp2_2_Den=pi^2*alpha*(t / T).^2;
+Exp2_2_Total=Exp2_2_Num./Exp2_2_Den;
 
-Exp2_2_Num=constante*sin(pi*(t / T))*sin(pi*alpha*(t / T)); %PLP
-Exp2_2_Den=pi^2*alpha*(t / T)^2;
-Exp2_2_Total=Exp2_2_Num/Exp2_2_Den;
 
-Exp3 = exp(-pi*(beta/2)*(t / T)^2);
+Exp3 = exp(-pi*(beta/2)*(t / T).^2);
 
-Exponential_Linear_Pulse=(Exp3.*Exp2_2_Total);
-
-% Get the BTRC Pulse
-v = Exponential_Linear_Pulse;
+v=( Exp3.*Exp2_2_Total);
 
 end
 
