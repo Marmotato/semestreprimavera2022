@@ -17,10 +17,11 @@ omega = 0.10;
 
 
 % Obtain the value for the SNR and SIR in linear
-coeff = 10^(snr/20);                
-  
+coeff = 10^(snr/20);    
+coeff2 = 10^(SIRdB/20);
 
-ri = sqrt(snr/(SIRdB*L));
+ri = sqrt(1/L) * (coeff/coeff2);               
+  
 
 % Calculate the offsets
 offset = [0.05, 0.1, 0.2 0.25];
@@ -52,14 +53,16 @@ for c=1:length(offset)
     mult2=1;
     % Calculate the sum
     for m=1:2:M
-        % Calculate the product
+        % Calculate the products
+        %CCI
         for i=1:L
-            mult1 = double(besselj(0, mult1 * (m*omega*ri ) ) ); %queda definir ri(i)
+            mult1 = double(mult1 *besselj(0, (m*omega*ri ) ) ); 
         end
+        %ISI
         for k=1:length(gk)
             mult2= double(mult2 * cos(m*omega*gk(k)));
         end
-        suma= double(suma + ((exp(-(m * omega)^2 / 2) * sin(m * omega * g0))/m) * mult1 * mult2);
+        suma= double(suma + ((exp(-(m * omega)^2 / 2) * sin(m * omega * g0))/m) * (mult1 * mult2));
         mult1=1;
         mult2=1;
     end

@@ -19,9 +19,10 @@ snr = 15;
 
 
 % Obtain the value for the SNR and SIR in linear
-coeff = 10^(snr/20);                
+coeff = 10^(snr/20);    
+coeff2 = 10^(SIRdB/20);
 
-ri = sqrt(snr/(SIRdB*L));
+ri = sqrt(1/L) * (coeff/coeff2);
 
 % Calculate the offsets
 offset = [0.05, 0.1, 0.2 0.25];
@@ -54,7 +55,7 @@ for c=1:length(offset)
     for m=1:2:M
         % Calculate the product
         for i=1:L
-            mult = double(besselj(0, mult * (m*omega*ri ) ) ); %queda definir ri(i)
+            mult = double(mult *besselj(0, (m*omega*ri ) ) );
         end
         suma= double(suma + ((exp(-(m * omega)^2 / 2) * sin(m * omega * g0))/m) * mult);
         mult=1;

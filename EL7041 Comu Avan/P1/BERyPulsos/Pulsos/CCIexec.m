@@ -105,7 +105,7 @@ BER_CCI_i('ELP', alpha, SIR, L)
 
 disp('alpha = 0.5, SIR = 20dB, L = 6')
 
-SIR = 20
+SIR = 20;
 alpha = 0.22;
 L = 6;
 
