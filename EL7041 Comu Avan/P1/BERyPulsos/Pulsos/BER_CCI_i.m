@@ -1,4 +1,4 @@
-function [BER]=BER_CCI_i(str,alpha,snr, L, SIRdB)
+function [BER]=BER_CCI_i(str,alpha,SIRdB , L)
 %Alpha: Factor de roll-off
 %L: Elementos generadores de CCI
 %STRING --> NOMBRE DEL PULSO --> CARPETA CON PULSOS
@@ -13,6 +13,8 @@ nbits = 2^10;
 N     = floor(nbits/2);     
 M     = 100;                
 omega = 0.10; 
+
+snr = 10;
 
 
 
