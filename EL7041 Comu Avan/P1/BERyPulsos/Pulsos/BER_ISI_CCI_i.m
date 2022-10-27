@@ -18,9 +18,9 @@ omega = 0.10;
 
 % Obtain the value for the SNR and SIR in linear
 coeff = 10^(snr/20);                
-coeffSIR = 10^(SIRdB/20);  
+  
 
-ri = ones(1, L);
+ri = sqrt(snr/(SIRdB*L));
 
 % Calculate the offsets
 offset = [0.05, 0.1, 0.2 0.25];
@@ -54,7 +54,7 @@ for c=1:length(offset)
     for m=1:2:M
         % Calculate the product
         for i=1:L
-            mult1 = double(besselj(0, mult1 * (m*omega*ri(i) ) ) ); %queda definir ri(i)
+            mult1 = double(besselj(0, mult1 * (m*omega*ri ) ) ); %queda definir ri(i)
         end
         for k=1:length(gk)
             mult2= double(mult2 * cos(m*omega*gk(k)));
@@ -65,6 +65,8 @@ for c=1:length(offset)
     end
     sumaT2(c) = (1./2. - (2./pi) * suma);
 end
+
+disp(str)
 
 BER=sumaT2;
 %BER=vpa(BER,8); %Precisión del BER
