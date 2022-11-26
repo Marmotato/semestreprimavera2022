@@ -1,4 +1,16 @@
 
+%TO DO:
+
+
+%   - HACER QUE LA CUESTION SE REPITA 21 VECES PARA MONTE CARLO (hacer una iteración for 21 y guardarlos por iteración)
+%   - REEMPLAZAR nb por BITS directamente porque pide 100000 bits el enunciado
+%   -- ver como agruparlos en la funcion b_QPSK etc y las siguientes
+%   - VER PORQUE EL AWGN METE RUIDO EN EL (1,1)
+%   - VER BER EN QPSK y 8PSK PORQUE ESTÁ MAL
+%   - VER COMO MODIFICAR LOS VALORES DEL AWGN PARA LOS QUE PIDE EL ENUNCIADO
+%   - No entiendo ni la mitad de lo que hace el código de estimación de
+%   canal
+
 % % % % % % % % % % % % Initialization
 clc;
 clear all;
