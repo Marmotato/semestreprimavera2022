@@ -1,26 +1,31 @@
+% % % % % % % % % % % % Initialization
 clc;
 clear all;
 
-snrr=[0:1:40];
+snrr=[-2:1:30];
+
 Bits = 10^5;
-nb=1593; %number of symbols symbols
+%bits = randi([0 1],Bits,1);
+%nb = Bits/2; %numero de símbolos, cada símbolo tamaño 2 
+%nb=1593; %number of symbols symbols
+nb=33345;
 N=10;
 pilot=1+1i; % pilot symbol
 
 
-%% 16QAM
-% % % % % % % % % % % % % % % % % % % %
-% % % % % % % % % % % % % % % % %mapping 16QAM
-inphase = [0.9 0.9 0.9 0.9 0.3 0.3 0.3 0.3];
-quadr = [-0.9 -0.3 0.3 0.9 -0.9 -0.3 0.3 0.9];
-inphase = [inphase;-inphase]; inphase = inphase(:);
-quadr = [quadr;quadr]; quadr = quadr(:);
-const = inphase + j*quadr;
+%% 8PSK
+% % % % % % % % % % % % % % % % %mapping QPSK
+% inphaseQPSK = [-1 1];
+% quadrQPSK = [-1 1];
+% inphaseQPSK = [inphaseQPSK;-inphaseQPSK]; inphaseQPSK = inphaseQPSK(:);
+% quadrQPSK = [quadrQPSK;quadrQPSK]; quadrQPSK = quadrQPSK(:);
+% constQPSK = inphaseQPSK + j*quadrQPSK;
 
-M = length(const);
-b = randi([0 M-1],nb,1); %generación random de símbolos
-% % % % % % % % % % % % % % % % % % % %
-tx=genqammod(b,const); %general quadrature amplitude modulation
+M = 8;
+b_8PSK = randi([0 M-1],nb,1); %generación random de símbolos (1 a 4)
+
+
+tx = pskmod(b_8PSK, M, pi/M); %QPSK modulation
 [txp]=addpilot(tx,nb,pilot,N);%adding pilot and calculating no. of symbols per frame
 len=length(txp);
 ct=rayleighfading(len); %genarating rayliegh fading channel
@@ -60,21 +65,23 @@ end
 
 [ch chp]=extpltcoef(ct,N,nb); %Extracting actual pilot coefficients and channel coefficients
 
+%% PLOTS 1 8PSK
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plots %%%%%%%%%%%%%%%%%%%%%%%
 
-QAM_noise=awgn(txp,15,'measured','db' );%%%%% SNR
-figure,plot(real(QAM_noise),imag(QAM_noise),'x');
-title('QAM AFFECTED WITH NOISE');
+eightPSK_noise=awgn(txp,15,'measured','db' );%%%%% SNR
+figure,plot(real(eightPSK_noise),imag(eightPSK_noise),'x');
+title('8PSK AFFECTED WITH NOISE');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 
 figure,plot(real(twn),imag(twn),'r.');
-title('QAM AFFECTED WITH RAYLEIGH FADING');
+title('8PSK AFFECTED WITH RAYLEIGH FADING');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 
 figure,plot(real(rx),imag(rx),'r.');
-title('QAM PLOT WITH NOISE AND RAYLEIGH FADING');
+title('8PSK PLOT WITH NOISE AND RAYLEIGH FADING');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 
@@ -83,10 +90,16 @@ plot(real(RX),imag(RX),'r.');
 hold on;
 plot(real(tx),imag(tx),'o');
 grid on;
-title('QAM PLOT');
+title('8PSK PLOT');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 legend('PLOT AT RX con Ecualización','PLOT AT TX' );
+
+
+
+
+
+%% PLOTS 2 8PSK
 
 %--------------------------------------------------------------------------------
 
@@ -165,14 +178,15 @@ RX4t(i)=rxt(i)/chnstinf4t(i);
 end
 
 %Demodulación de la señal
-rt=genqamdemod(RXt,const);
-r2t=genqamdemod(RX2t,const);
-r3t=genqamdemod(RX3t,const);
-r4t=genqamdemod(RX4t,const);
-[no_of_error1(l),rate1(l)]=biterr(b.',rt) ; % error rate calculation for fft
-[no_of_error2(l),rate2(l)]=biterr(b.',r2t) ; % error rate calculation for spline
-[no_of_error3(l),rate3(l)]=biterr(b.',r3t) ; % error rate calculation for linear
-[no_of_error4(l),rate4(l)]=biterr(b.',r4t) ; % error rate calculation for cubic
+rt=pskdemod(RXt,8);
+r2t=pskdemod(RX2t,8);
+r3t=pskdemod(RX3t,8);
+r4t=pskdemod(RX4t,8);
+
+[no_of_error1(l),rate1(l)]=biterr(b_8PSK.',rt) ; % error rate calculation for fft
+[no_of_error2(l),rate2(l)]=biterr(b_8PSK.',r2t) ; % error rate calculation for spline
+%[no_of_error3(l),rate3(l)]=biterr(b_8PSK.',r3t) ; % error rate calculation for linear
+%[no_of_error4(l),rate4(l)]=biterr(b_8PSK.',r4t) ; % error rate calculation for cubic
 end
 % % % % % % % % % % % % % BER plot % % % % % % % % % % %
 figure,semilogy(snrr,rate1,'b-',snrr,rate2,'r-',snrr,rate3,'k-',snrr,rate4,'g-');
@@ -180,6 +194,7 @@ legend('fft','cubic spline','linear','cubic');
 title('BER curves for different interpolation techniques');
 xlabel('SNR in dB');
 ylabel('BER');
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%used functions
@@ -192,10 +207,24 @@ m=m+N;
 k=k+1;
 end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%used functions
+function [txp]=addpilot2(tx,nb,pilot,N) %Number of symbols per frame (Interpolation Factor)
+m=1;k=0;
+c=floor(nb/N);
+for i=1:c
+txp(m)=pilot;
+txp(m+1:m+N-1)=tx(i:i+N-2);
+m=m+N;
+k=k+1;
+end
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Remove pilot coefficients -- We actually do not use this function.
 function [ch chp]=extpltcoef(ct,N,nb)
-m=1;
+m=1; 
 ch=[];
 for i=1:N:length(ct)
 chp(m)=ct(i); %extracting only pilot symbols' coeeficient
@@ -214,14 +243,26 @@ rx=[rx t(i+1:i+N-1)]; %extracting data symbols
 m=m+1;
 end
 end
+
+function [rx rxp]=extractpilot2(t,N,nb)
+m=1;
+rx=[];
+c = 5000;
+for i=1:c
+rxp(m)=t(i); %extracting only pilot symbols
+rx=[rx t(i+1:i+N-1)]; %extracting data symbols
+m=m+1;
+end
+end
+%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Rayleigh fading
 function [c]=rayleighfading(m)
 clc;
-N=50; % Number of reflections
+N=40; % Number of reflections
 fmax=100; %Max doppler shift
 A=1; %amplitude
-f=10000; %sampling frequency
+f=700*1000; %sampling frequency
 t=0:1/f:((m/10000)-(1/f)); %sampling time
 ct=zeros(1,m);
 ph=2*pi* rand(1,32);
@@ -235,5 +276,3 @@ end
 end
 c=ct/sqrt(N); %channel coefficient
 end
-%c=ct/sqrt(N); %channel coefficient
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

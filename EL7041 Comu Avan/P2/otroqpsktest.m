@@ -9,7 +9,8 @@ snrr=[-2:1:30];
 Bits = 10^5;
 %nb=1593; %number of symbols symbols
 %bits = randi([0 1],Bits,1);
-nb = Bits/2;
+bps = 2; %bits por simbolo
+nb = Bits/bps;
 N=10;
 pilot=1+1i; % pilot symbol
 
@@ -26,7 +27,7 @@ qpskmod = comm.QPSKModulator; %QPSK modulator object
 %qpskmod.BitInput = true; %input de bits
 tx=qpskmod(b_QPSK); %general QPSK modulation
 
-[txp]=addpilot2(tx,nb,pilot,N);%adding pilot and calculating no. of symbols per frame
+[txp]=addpilot(tx,nb,pilot,N);%adding pilot and calculating no. of symbols per frame
 %txp = [txp pilot];
 len=length(txp);
 ct=rayleighfading(len); %genarating rayliegh fading channel
@@ -35,17 +36,17 @@ twn=txp.*ct; %Multiplying Rayleigh channel coeeficients
 % % % % % % % % % % % % % % noise generation
 t=awgn(twn,30,'measured','db' );%%%%% SNR
 % % % % % % % % % % % % % % % % % % % % % % %
-[rx rxp]=extractpilot2(t,N,nb); %extracting pilot at receiver
+[rx rxp]=extractpilot(t,N,nb); %extracting pilot at receiver
 
 %Channel Estimation CSI
 csi=rxp/pilot; %calculating CSI of pilot
 % % % % % % % % % % interpolation techniques
 chnstinf=interpft(csi,nb);%%%%%%%% fft interpolation
 
-t1=1:1:1770;
-t2=1:10:1770;%%%%%% pilot symbols position
+t1=1:1:50000;
+t2=1:10:50000;%%%%%% pilot symbols position
 m=1;k=0;
-for i=1:10:1770
+for i=1:10:50000
  t3(m:m+8)=t1( i+1:i+9);%%%%%%% msg symbols position
  m=m+9;
  k=k+1;
@@ -55,7 +56,7 @@ chnstinf4=interp1(t2,csi,t3,'pchip');%%%%%%%% cubic interpolation technique
 
 % % % % % % % % % % %Calculating received signal --> ECUALIZACIÓN ZERO
 % FORCING
-for i=1:nb
+for i=1:45000
 RX(i)=rx(i)/chnstinf(i); %%%%calculating rxd symbols using fft interpolation technique
 RX3(i)=rx(i)/chnstinf3(i);%%%%using linear interpolation
 RX4(i)=rx(i)/chnstinf4(i);%%%% using cubic interpolation
@@ -96,14 +97,14 @@ legend('PLOT AT RX con Ecualización','PLOT AT TX' );
 %%%%%%%%%%%%%plots 2%%%%%%%%%%%%%%%
 %Función de transferencia del canal  y estimación del canal
 cdb=10*log(abs(ch));
-figure,plot(0:1:nb-1,cdb);
+figure,plot(0:1:length(cdb)-1,cdb);
 title('Typical Rayleigh fading channel');
 xlabel('t in samples');
 ylabel('Power in dB');
 
-figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
+figure,plot(0:1:length(ch)-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
-plot(0:1:nb-1,(abs(chnstinf)),'b'); %Plotting estimated value of fft
+plot(0:1:length(chnstinf)-1,(abs(chnstinf)),'b'); %Plotting estimated value of fft
 legend ('Actual value','Estimated value fft');
 hold off;
 title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with FFT');
@@ -111,27 +112,19 @@ xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
 
 
-figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
-hold on;
-plot(0:1:nb-1,(abs(chnstinf2)),'b'); %Plotting estimated value by spline
-legend ('Actual value','Estimated value spline');
-hold off;
-title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Spline');
-xlabel('Time in samples');
-ylabel('Magnitude of coefficients');
 
-figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
+figure,plot(0:1:length(ch)-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
-plot(0:1:nb-1,(abs(chnstinf3)),'b'); %Plotting estimated value by linear
+plot(0:1:length(chnstinf3)-1,(abs(chnstinf3)),'b'); %Plotting estimated value by linear
 legend ('Actual value','Estimated value linear');
 hold off;
 title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Linear');
 xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
 
-figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
+figure,plot(0:1:length(ch)-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
-plot(0:1:nb-1,(abs(chnstinf4)),'b'); %Plotting estimated value by cubic
+plot(0:1:length(chnstinf4)-1,(abs(chnstinf4)),'b'); %Plotting estimated value by cubic
 legend ('Actual value','Estimated value fft');
 hold off;
 title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Cubic');
@@ -149,10 +142,10 @@ csit=rxpt/pilot; %calculating CSI of pilot
 % % % % % % % % % % interpolation techniques
 
 chnstinft=interpft(csit,nb);
-t1t=1:1:1770;
-t2t=1:10:1770;
+t1t=1:1:50000;
+t2t=1:10:50000;
 mt=1;kt=0;
-for i=1:10:1770
+for i=1:10:50000
  t3t(mt:mt+8)=t1t( i+1:i+9);
  mt=mt+9;
  kt=kt+1;
@@ -160,7 +153,7 @@ end
 chnstinf3t=interp1(t2t,csit,t3t,'linear');
 chnstinf4t=interp1(t2t,csit,t3t,'pchip');
 % % % % % % % % % % %Calculating received signal ECUALIZACIÓN ZF
-for i=1:nb
+for i=1:45000
 RXt(i)=rxt(i)/chnstinft(i);
 RX3t(i)=rxt(i)/chnstinf3t(i);
 RX4t(i)=rxt(i)/chnstinf4t(i);
@@ -170,10 +163,6 @@ end
 rt=pskdemod(RXt,4);
 r3t=pskdemod(RX3t,4);
 r4t=pskdemod(RX4t,4);
-
-rt(isnan(rt))=0;
-r3t(isnan(r3t))=0;
-r4t(isnan(r4t))=0;
 
 [no_of_error1(l),rate1(l)]=biterr(b_QPSK.',rt) ; % error rate calculation for fft
 [no_of_error3(l),rate3(l)]=biterr(b_QPSK.',r3t) ; % error rate calculation for linear
@@ -192,27 +181,17 @@ ylabel('BER');
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%used functions
-function [txp]=addpilot(tx,nb,pilot,N) %Number of symbols per frame (Interpolation Factor)
-m=1;k=0;
-for i=1:N-1:nb
-txp(m)=pilot;
-txp(m+1:m+N-1)=tx(i:i+N-2);
-m=m+N;
-k=k+1;
+function [Txp]=addpilot(Tx,nsym,pilot,N) %Number of symbols per frame (Interpolation Factor)
+m = 1;
+k = 0;
+for i = 1:N:nsym
+    Txp(m) = pilot;
+    Txp(m+1:m+N) = Tx(i:i+N-1);
+    m = m + N + 1;
+    k = k + 1;
 end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%used functions
-function [txp]=addpilot2(tx,nb,pilot,N) %Number of symbols per frame (Interpolation Factor)
-m=1;k=0;
-c=floor(nb/N);
-for i=1:c
-txp(m)=pilot;
-txp(m+1:m+N-1)=tx(i:i+N-2);
-m=m+N;
-k=k+1;
-end
-end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -231,23 +210,14 @@ end
 function [rx rxp]=extractpilot(t,N,nb)
 m=1;
 rx=[];
-for i=1:N:length(t)
+for i = 1:N+1:length(t)
 rxp(m)=t(i); %extracting only pilot symbols
 rx=[rx t(i+1:i+N-1)]; %extracting data symbols
 m=m+1;
 end
 end
 
-function [rx rxp]=extractpilot2(t,N,nb)
-m=1;
-rx=[];
-c = 5000
-for i=1:c
-rxp(m)=t(i); %extracting only pilot symbols
-rx=[rx t(i+1:i+N-1)]; %extracting data symbols
-m=m+1;
-end
-end
+
 %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Rayleigh fading
