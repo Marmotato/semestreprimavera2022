@@ -9,7 +9,7 @@ clear all;
 snrr=[-2:1:30];
 
 Bits = 10^5;
-bps = 2;
+bps = 16;
 %bits = randi([0 1],Bits,1);
 %nb = Bits/2; %numero de símbolos, cada símbolo tamaño 2 
 %nb=1593; %number of symbols symbols
