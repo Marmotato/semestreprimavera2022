@@ -90,7 +90,7 @@ ylabel('IMG(DATA)');
 figure,
 plot(real(RX),imag(RX),'r.');
 hold on;
-plot(real(tx),imag(tx),'o');
+plot(real(tx),imag(tx),'b.');
 grid on;
 title('QPSK PLOT');
 xlabel('REAL(DATA)');

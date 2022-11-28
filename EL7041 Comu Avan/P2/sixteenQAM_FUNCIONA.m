@@ -95,12 +95,13 @@ ylabel('IMG(DATA)');
 figure,
 plot(real(RX),imag(RX),'r.');
 hold on;
-plot(real(tx),imag(tx),'o');
+plot(real(tx),imag(tx),'b.');
 grid on;
 title('16QAM PLOT');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 legend('PLOT AT RX con Ecualización','PLOT AT TX' );
+hold off
 
 %% PLOTS 2
 %%%%%%%%%%%%%plots 2%%%%%%%%%%%%%%%
@@ -150,7 +151,7 @@ ylabel('Magnitude of coefficients');
 %}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% for BER curves%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%% generating curves for snr ranging from 0dB to 40dB
+%%%%%%%%% generating curves for snr ranging from -2 dB to 30dB
 for l=1:length(snrr)
 tt=awgn(twn,snrr(l),'measured','db' );
 % % % % % % % % % % % % % % % % % % % % % % %
@@ -197,7 +198,9 @@ r4t=pskdemod(RX4t,4);
 [no_of_error4(l),rate4(l)]=biterr(b_16QAM.',r4t) ; % error rate calculation for cubic
 end
 % % % % % % % % % % % % % BER plot % % % % % % % % % % %
-figure,semilogy(snrr,rate1,'b-',snrr,rate2,'r-',snrr,rate3,'k-',snrr,rate4,'g-');
+figure
+hold  on
+semilogy(snrr, rate1,'b-',snrr,rate2,'r-',snrr,rate3,'k-',snrr,rate4,'g-');
 legend('fft','cubic spline','linear','cubic');
 title('BER curves for different interpolation techniques');
 xlabel('SNR in dB');
