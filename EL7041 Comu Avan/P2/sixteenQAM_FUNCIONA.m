@@ -28,8 +28,8 @@ quadr = [quadr;quadr]; quadr = quadr(:);
 const = inphase + j*quadr;
 
 
-M = 16;
-b_16QAM = randi([0 M-1],nb,1); %generación random de símbolos
+M_16QAM = 16;
+b_16QAM = randi([0 M_16QAM-1],nb,1); %generación random de símbolos
 % % % % % % % % % % % % % % % % % % % %
 tx=genqammod(b_16QAM,const); %general quadrature amplitude modulation
 

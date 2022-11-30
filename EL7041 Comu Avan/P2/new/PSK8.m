@@ -14,11 +14,11 @@ bps = 8;
 %nb = Bits/2; %numero de símbolos, cada símbolo tamaño 2 
 %nb=1593; %number of symbols symbols
 nb = Bits/bps;
-N=10;
+N=20;
 pilot=1+1i; % pilot symbol
 
 
-%% 8PSK
+%% (PSK
 % % % % % % % % % % % % % % % % % % % %
 % % % % % % % % % % % % % % % % %mapping 8PSK
 
@@ -43,11 +43,11 @@ csi=rxp/pilot; %calculating CSI of pilot
 chnstinf=interpft(csi,nb);%%%%%%%% fft interpolation
 
 t1 = 1:1:length(Txp);
-t2 = 1:11:length(Txp); %Posición de las piloto
+t2 = 1:N+1:length(Txp); %Posición de las piloto
 m = 1;
 k = 0;
 t3 = [];
-for i = 1:11:length(Txp)
+for i = 1:N+1:length(Txp)
     t3 = [t3 t1(i+1:i+N)]; %Posición de los símbolos
     m = m + N;
     k = k + 1;
@@ -89,7 +89,7 @@ ylabel('IMG(DATA)');
 figure,
 plot(real(RX),imag(RX),'r.');
 hold on;
-plot(real(tx),imag(tx),'b.');
+plot(real(tx),imag(tx),'o');
 grid on;
 title('8PSK PLOT');
 xlabel('REAL(DATA)');
@@ -154,11 +154,11 @@ csit=rxpt/pilot; %calculating CSI of pilot
 
 chnstinft=interpft(csit,nb);
 t1t = 1:1:length(Txp);
-t2t = 1:11:length(Txp); %Posición de las piloto
+t2t = 1:N+1:length(Txp); %Posición de las piloto
 mt = 1;
 kt = 0;
 t3t = [];
-for i = 1:11:length(Txp)
+for i = 1:N+1:length(Txp)
     t3t = [t3t t1(i+1:i+N)]; %Posición de los símbolos
     mt = mt + N;
     kt = kt + 1;
@@ -174,6 +174,7 @@ RX3t(i)=rxt(i)/chnstinf3t(i);
 RX4t(i)=rxt(i)/chnstinf4t(i);
 end
 
+RX3t(isnan(RX3t)) = 0;
 %Demodulación de la señal
 rt=pskdemod(RXt,8);
 r2t=pskdemod(RX2t,8);
@@ -196,6 +197,7 @@ legend('fft','cubic spline','linear','cubic');
 title('BER curves for different interpolation techniques');
 xlabel('SNR in dB');
 ylabel('BER');
+axis([-2 30 10^(-1) 10^0])
 
 % % % % % % % % % % % % % % % % % % % %
 % % % % % % % 
@@ -252,9 +254,11 @@ end
 function [c]=rayleighfading(m)
 clc;
 N=40; % Number of reflections
-fmax=100; %Max doppler shift
+vel = (80)*(5/18); %doppler generating velocity in m/s
 A=1; %amplitude
-f=700*1000; %sampling frequency
+f=10000; %sampling frequency
+fmax=100; %Max doppler shift
+%fmax=f*((3*10^8 +vel)/(3*10^8)); %Max doppler shift
 t=0:1/f:((m/10000)-(1/f)); %sampling time
 ct=zeros(1,m);
 ph=2*pi* rand(1,32);
