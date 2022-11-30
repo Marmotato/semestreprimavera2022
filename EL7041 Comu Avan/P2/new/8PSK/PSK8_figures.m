@@ -9,17 +9,18 @@ clear all;
 snrr=[-2:1:30];
 
 noise = 10; %-5, 0 , 10, 30
-reflec = 40; %5, 40
-vel = 80; % 30, 80
-fport = 5900; %700, 5900
-N=10; %5, 10, 20
+reflec = 5; %5, 40
+vel = 30; % 30, 80
+fport = 700; %700, 5900
+N=20; %5, 10, 20
 
 Bits = 10^5;
 bps = 8;
 %bits = randi([0 1],Bits,1);
 %nb = Bits/2; %numero de símbolos, cada símbolo tamaño 2 
 %nb=1593; %number of symbols symbols
-nb = Bits/bps;
+%nb = Bits/bps;
+nb = 30000;
 
 pilot=1+1i; % pilot symbol
 
