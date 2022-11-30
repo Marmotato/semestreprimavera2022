@@ -1,4 +1,4 @@
-%Montecarlo 8PSK
+%Montecarlo 16QAM
 
 %TO DO:
 
@@ -8,19 +8,25 @@ clear all;
 
 snrr=[-2:1:30];
 
+noise = 10; %-5, 0 , 10, 30
+reflec = 40; %5, 40
+vel = 80; % 30, 80
+fport = 5900; %700, 5900
+N=10; %5, 10, 20
+
 Bits = 10^5;
 bps = 8;
 %bits = randi([0 1],Bits,1);
 %nb = Bits/2; %numero de símbolos, cada símbolo tamaño 2 
 %nb=1593; %number of symbols symbols
 nb = Bits/bps;
-N=10;
+
 pilot=1+1i; % pilot symbol
 
 
-%% (PSK
+%% 8PSK
 % % % % % % % % % % % % % % % % % % % %
-% % % % % % % % % % % % % % % % %mapping 8PSK
+% % % % % % % % % % % % % % % % %mapping QPSK
 
 M_8PSK = 8;
 b_8PSK = randi([0 M_8PSK-1],nb,1); %generación random de símbolos (1 a 4)
@@ -29,7 +35,7 @@ tx = pskmod(b_8PSK, M_8PSK, pi/M_8PSK); %8PSK modulation
 
 [Txp]=addpilot(tx,nb,pilot,N);%adding pilot and calculating no. of symbols per frame
 len=length(Txp);
-ct=rayleighfading(len); %genarating rayliegh fading channel
+ct=rayleighfading(len, reflec, vel, fport); %genarating rayliegh fading channel
 
 twn=Txp.*ct; %Multiplying Rayleigh channel coeeficients
 % % % % % % % % % % % % % % noise generation
@@ -70,57 +76,62 @@ end
 %% PLOTS 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% plots %%%%%%%%%%%%%%%%%%%%%%%
 
-eightPSK_noise=awgn(Txp,15,'measured','db' );%%%%% SNR
-figure,plot(real(eightPSK_noise),imag(eightPSK_noise),'x');
-title('8PSK AFFECTED WITH NOISE');
+QPSK_noise=awgn(Txp,15,'measured','db' );%%%%% SNR
+figure,plot(real(QPSK_noise),imag(QPSK_noise),'x');
+%title('QPSK AFFECTED WITH NOISE');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
+
 
 figure,plot(real(twn),imag(twn),'r.');
-title('8PSK AFFECTED WITH RAYLEIGH FADING');
+%title('QPSK AFFECTED WITH RAYLEIGH FADING');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_constelarayleigh.png')
 
 figure,plot(real(rx),imag(rx),'r.');
-title('8PSK PLOT WITH NOISE AND RAYLEIGH FADING');
+%title('QPSK PLOT WITH NOISE AND RAYLEIGH FADING');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_constelarayleighawgn.png')
 
 figure,
 plot(real(RX),imag(RX),'r.');
 hold on;
 plot(real(tx),imag(tx),'o');
 grid on;
-title('8PSK PLOT');
+%title('QPSK PLOT');
 xlabel('REAL(DATA)');
 ylabel('IMG(DATA)');
 legend('PLOT AT RX con Ecualización','PLOT AT TX' );
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_constelarayleighawgn_eq.png')
 
 %% PLOTS 2
 %%%%%%%%%%%%%plots 2%%%%%%%%%%%%%%%
 %Función de transferencia del canal  y estimación del canal
 cdb=10*log(abs(ch));
 figure,plot(0:1:nb-1,cdb);
-title('Typical Rayleigh fading channel');
+%title('Typical Rayleigh fading channel');
 xlabel('t in samples');
 ylabel('Power in dB');
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_funcionestimacioncanal.png')
 
 figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
 plot(0:1:nb-1,(abs(chnstinf)),'b'); %Plotting estimated value of fft
 legend ('Actual value','Estimated value fft');
 hold off;
-title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with FFT');
+%title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with FFT');
 xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
-
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_FFT.png')
 
 figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
 plot(0:1:nb-1,(abs(chnstinf2)),'b'); %Plotting estimated value by spline
 legend ('Actual value','Estimated value spline');
 hold off;
-title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Spline');
+%title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Spline');
 xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
 
@@ -129,22 +140,30 @@ hold on;
 plot(0:1:nb-1,(abs(chnstinf3)),'b'); %Plotting estimated value by linear
 legend ('Actual value','Estimated value linear');
 hold off;
-title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Linear');
+%title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Linear');
 xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_LINEAR.png')
 
 figure,plot(0:1:nb-1,(abs(ch)),'r'); %Plotting actual value
 hold on;
 plot(0:1:nb-1,(abs(chnstinf4)),'b'); %Plotting estimated value by cubic
-legend ('Actual value','Estimated value fft');
+legend ('Actual value','Estimated value Cubic');
 hold off;
-title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Cubic');
+%title('ACTUAL AND ESTIMATED CHANNEL COEFFICIENTS with Cubic');
 xlabel('Time in samples');
 ylabel('Magnitude of coefficients');
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_CUBIC.png')
 %}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%% for BER curves%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%% generating curves for snr ranging from 0dB to 40dB
+%%%%%%%%% generating curves for snr ranging from -2 dB to 30dB
+
+tot_rate1 = zeros(1,33);
+tot_rate2 = zeros(1,33);
+tot_rate3 = zeros(1,33);
+tot_rate4 = zeros(1,33);
+
+for asd=1:21
 for l=1:length(snrr)
 tt=awgn(twn,snrr(l),'measured','db' );
 % % % % % % % % % % % % % % % % % % % % % % %
@@ -154,11 +173,11 @@ csit=rxpt/pilot; %calculating CSI of pilot
 
 chnstinft=interpft(csit,nb);
 t1t = 1:1:length(Txp);
-t2t = 1:N+1:length(Txp); %Posición de las piloto
+t2t = 1:11:length(Txp); %Posición de las piloto
 mt = 1;
 kt = 0;
 t3t = [];
-for i = 1:N+1:length(Txp)
+for i = 1:11:length(Txp)
     t3t = [t3t t1(i+1:i+N)]; %Posición de los símbolos
     mt = mt + N;
     kt = kt + 1;
@@ -174,12 +193,12 @@ RX3t(i)=rxt(i)/chnstinf3t(i);
 RX4t(i)=rxt(i)/chnstinf4t(i);
 end
 
-RX3t(isnan(RX3t)) = 0;
+
 %Demodulación de la señal
-rt=pskdemod(RXt,8);
-r2t=pskdemod(RX2t,8);
-r3t=pskdemod(RX3t,8);
-r4t=pskdemod(RX4t,8);
+rt=pskdemod(RXt,4);
+r2t=pskdemod(RX2t,4);
+r3t=pskdemod(RX3t,4);
+r4t=pskdemod(RX4t,4);
 
 % rt(isnan(rt))=0;
 % r2t(isnan(r2t))=0;
@@ -191,17 +210,28 @@ r4t=pskdemod(RX4t,8);
 [no_of_error3(l),rate3(l)]=biterr(b_8PSK.',r3t) ; % error rate calculation for linear
 [no_of_error4(l),rate4(l)]=biterr(b_8PSK.',r4t) ; % error rate calculation for cubic
 end
-% % % % % % % % % % % % % BER plot % % % % % % % % % % %
-figure,semilogy(snrr,rate1,'b-',snrr,rate2,'r-',snrr,rate3,'k-',snrr,rate4,'g-');
+
+tot_rate1 = tot_rate1 + rate1;
+tot_rate2 = tot_rate2 + rate2;
+tot_rate3 = tot_rate3 + rate3;
+tot_rate4 = tot_rate4 + rate4;
+
+end
+
+tot_rate1 = tot_rate1/21;
+tot_rate2 = tot_rate2/21;
+tot_rate3 = tot_rate3/21;
+tot_rate4 = tot_rate4/21;
+
+% % % % % % % % % % % % % BER plot Monte Carlo % % % % % % % % % % %
+figure
+hold  on
+semilogy(snrr, tot_rate1,'b-',snrr,tot_rate2,'r-',snrr,tot_rate3,'k-',snrr,tot_rate4,'g-');
 legend('fft','cubic spline','linear','cubic');
-title('BER curves for different interpolation techniques');
+%%title('BER curves for different interpolation techniques');
 xlabel('SNR in dB');
 ylabel('BER');
-axis([-2 30 10^(-1) 10^0])
-
-% % % % % % % % % % % % % % % % % % % %
-% % % % % % % 
-
+saveas(gcf,'reflex'+string(reflec)+'vel'+string(vel)+'_port'+string(fport)+'N'+string(N)+'_BER.png')
 
 
 
@@ -248,24 +278,26 @@ end
 end
 
 
+
 %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Rayleigh fading
-function [c]=rayleighfading(m)
+function [c]=rayleighfading(m, N, v, fport)
 clc;
-N=40; % Number of reflections
-vel = (80)*(5/18); %doppler generating velocity in m/s
+%N=5; % Number of reflections
+c = 1.0793*10^9; %Velocidad de la luz en km/h
+%v = 80; %Velocidad del móvil
+f0 = fport*10^6; %Frecuencia portadora
+fmax = v/c * f0;
 A=1; %amplitude
-f=10000; %sampling frequency
-fmax=100; %Max doppler shift
-%fmax=f*((3*10^8 +vel)/(3*10^8)); %Max doppler shift
-t=0:1/f:((m/10000)-(1/f)); %sampling time
+fs = 10000;
+t=0:1/fs:((m/10000)-(1/f0)); %sampling time
 ct=zeros(1,m);
-ph=2*pi* rand(1,32);
-theta=2*pi*rand(1,32);
+ph=2*pi* rand(1,N);
+theta=2*pi*rand(1,N);
 fd=fmax*cos(theta); %doppler shift
 for n=1:m
-for i=1:32
+for i=1:N
 ct(n)=ct(n)+(A*exp(j*(2*pi*fd(i)*t(n)+ph(i))));
 
 end
