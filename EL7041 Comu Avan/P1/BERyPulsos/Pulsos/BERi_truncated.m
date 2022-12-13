@@ -1,4 +1,4 @@
-function [BER]=BERi(str,alpha,snr)
+function [BER]=BERi_truncated(str,alpha,snr, trunc)
 %Alpha: Factor de roll-off
 %STRING --> NOMBRE DEL PULSO --> CARPETA CON PULSOS
 %BER: Valores del Bit-Error rate para cada offset
@@ -26,18 +26,18 @@ ab=[a b];
 values = [-1, 1];
 
 % Pulse shape to use
-fh=str2func(str);
+fh=str2func('Truncate');
 
 % Calculate the BER
-cd('Pulsos')
+%cd('Pulsos')
 sumaT2=zeros(1,length(offset));
 for c=1:length(offset)
-    g0 = coeff * fh(offset(c) * T,alpha);
+    g0 = coeff * fh(offset(c) * T,alpha, str, trunc);
     gk=zeros(length(ab),1);
     
     % Calculate the values for gk
     for i=1:length(ab)
-        gk(i) = coeff * values(randi([1, 2],1)) * fh((offset(c) - ab(i)) * T,alpha);
+        gk(i) = coeff * values(randi([1, 2],1)) * fh((offset(c) - ab(i)) * T,alpha, str, trunc);
     end
     
     % Calculate the sum and product
@@ -52,8 +52,10 @@ for c=1:length(offset)
         suma= double(suma + ((exp(-(m * omega)^2 / 2) * sin(m * omega * g0))/m) * mult);
         mult=1;
     end
-    sumaT2(c) = (1./2. - (2./pi) * suma);
+    sumaT2(c) = (1./2. - (2./pi) * suma)*10000;
 end
+
+disp(str)
 
 BER=sumaT2;
 %BER=vpa(BER,8); %Precisión del BER

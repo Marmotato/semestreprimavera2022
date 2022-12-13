@@ -1,13 +1,14 @@
 
 % Script for plotting the eye diagram of the system in which the transmitted signal is
 % filtered by the RC and LCP.
-% Added ELP and BTRC to filter.
+% 
+% Added ELP and BTRC to filter and display results.
 
 clc
 N  = 10^5; % number of symbols, solo se tomaran las primeras 1000000 muestras
 am = 2*(rand(1,N)>0.5)-1 + (1i)*(2*(rand(1,N)>0.5)-1); %random binary sequence BPSK
 fs = 10; % sampling frequency in Hz
-alpha = 0.5; %roll-off factor
+alpha = 0.5; %roll-off factor, reemplazar para evaluar
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %% RAISED COSINE FILTER

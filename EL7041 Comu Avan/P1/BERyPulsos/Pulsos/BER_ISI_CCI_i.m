@@ -44,7 +44,6 @@ for c=1:length(offset)
     
     % Calculate the values for gk
     for i=1:length(ab)
-        gk(i) = coeff * values(randi([1, 2],1)) * fh((offset(c) - ab(i)) * T,alpha);
     end
     
     % Calculate the sum and product
